@@ -47,17 +47,44 @@ export class PostsLoaderService {
 
   async syncAllCategories(): Object {
     const dbCategories = await this.categoryService.getAll();
+    const { categories: webCategories } = await this.categoryService.getNetworkCategories();
     const initialLoadingDone = !!dbCategories.length;
     if (initialLoadingDone) {
-      this.loadCategoriesAndPosts();
+      this.loadCategoriesAndPosts({ webCategories });
     } else {
 
     }
     return {};
   }
 
-  async loadCategoriesAndPosts(): boolean {
-    const { categories: webCategories } = await this.categoryService.getNetworkCategories();
+  async syncAllPosts({ dbCategories, webCategories }): boolean {
+    const updatedCategories = dbCategories.filter((cat, index) => {
+      const webCat = webCategories[index];
+      return webCat.count > cat.count;
+    });
+
+    for (const updatedCategory of updatedCategories) {
+      const udpatedCategoryCount = updatedCategory.count;
+      const pageList = getPages({ count: udpatedCategoryCount, perPageItems });
+      const categoryId = updatedCategory.id;
+      const reversePageList = pageList.reverse();
+      const [lastPageNo = 1] = reversePageList;
+      const { posts: webPosts } = await this.postService.getNetworkPosts({
+        categoryId,
+        pageNo: lastPageNo,
+        perPageItems,
+      });
+      for (const webPost of webPosts) {
+        const post = this.postService.getPost({ id: webPost.id });
+        webPost.id !== post.id && (await this.postService.create(webPost));
+      }
+    }
+
+    return true;
+  }
+
+  async loadCategoriesAndPosts({ webCategories }): boolean {
+
     const webCatChunks = chunk(webCategories, 3);
 
     for (const webCatChunk of webCatChunks) {
@@ -66,13 +93,9 @@ export class PostsLoaderService {
         if (category) {
           const postCount = category.count;
           const categoryId = category.id;
-          const perPageItems = 100;
-          const pageList = Array.from(
-            Array(Math.ceil(postCount / perPageItems)).keys(),
-          );
+          const pageList = getPages({ count: postCount, perPageItems });
 
-          for (const pageIndex of pageList) {
-            const pageNo = pageIndex + 1;
+          for (const pageNo of pageList) {
             const { posts: webPosts } = await this.postService.getNetworkPosts({
               categoryId,
               pageNo,
@@ -86,5 +109,13 @@ export class PostsLoaderService {
         }
       }
     }
+
+    return true;
   }
 }
+
+function getPages({ count, perPageItems }) {
+  const pageList = Array.from(Array(Math.ceil(count / perPageItems)).keys());
+  return pageList.map((pageIndex) => pageIndex + 1);
+}
+const perPageItems = 100;

@@ -16,8 +16,12 @@ export class PostsService {
   }
 
   async getAll(): Promise<Post[]> {
-    const posts = this.postModel.find({ id: 123 }).exec();
+    const posts = await this.postModel.find({ id: 123 }).exec();
     return posts;
+  }
+
+  async getPost({ id }) {
+    return await this.postModel.find({ id }).exec();
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types

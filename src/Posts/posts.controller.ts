@@ -1,13 +1,22 @@
 import { Controller, Get } from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { Post } from './posts.schema';
+import { PostsLoaderService } from './postsLoader.service';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postService: PostsService) { }
+  constructor(
+    private readonly postService: PostsService,
+    private readonly postsLoaderService: PostsLoaderService,
+  ) { }
 
   @Get()
   getAll(): Promise<Object> {
     return this.postService.getNetworkPosts();
   }
+
+  @Get()
+  syncCategories(): Promise<Object> {
+    return await this.postsLoaderService.syncAllCategories();
+  }
+
 }

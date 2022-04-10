@@ -9,6 +9,7 @@ import { documentName, CategorySchema } from './Categories/catetory.schema';
 import { PostsController } from './Posts/posts.controller';
 import { PostsService } from './Posts/posts.service';
 import { postsDocumentName, PostSchema } from './Posts/posts.schema';
+import { PostsLoaderService } from './Posts/postsLoader.service';
 
 require('isomorphic-fetch');
 @Module({
@@ -21,6 +22,6 @@ require('isomorphic-fetch');
     ]),
   ],
   controllers: [CategoriesController, PostsController],
-  providers: [CategoriesService, PostsService],
+  providers: [CategoriesService, PostsService, PostsLoaderService],
 })
 export class AppModule { }
