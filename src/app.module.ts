@@ -1,10 +1,26 @@
 import { Module } from '@nestjs/common';
-import { CategoriesController } from './categories.controller';
-import { CategoriesService } from './categories.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
 
+import { CategoriesController } from './Categories/categories.controller';
+import { CategoriesService } from './Categories/categories.service';
+import { documentName, CategorySchema } from './Categories/catetory.schema';
+
+import { PostsController } from './Posts/posts.controller';
+import { PostsService } from './Posts/posts.service';
+import { postsDocumentName, PostSchema } from './Posts/posts.schema';
+
+require('isomorphic-fetch');
 @Module({
-  imports: [],
-  controllers: [CategoriesController],
-  providers: [CategoriesService],
+  imports: [
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot('mongodb://localhost:27017/test'),
+    MongooseModule.forFeature([{ name: documentName, schema: CategorySchema }]),
+    MongooseModule.forFeature([
+      { name: postsDocumentName, schema: PostSchema },
+    ]),
+  ],
+  controllers: [CategoriesController, PostsController],
+  providers: [CategoriesService, PostsService],
 })
-export class AppModule {}
+export class AppModule { }
