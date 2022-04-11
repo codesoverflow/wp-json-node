@@ -9,6 +9,9 @@ export class Post {
   id: number;
 
   @Prop()
+  categoryId: number;
+
+  @Prop()
   date: string;
 
   @Prop()

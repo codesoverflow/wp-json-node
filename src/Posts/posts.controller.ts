@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostsLoaderService } from './postsLoader.service';
 
@@ -10,8 +10,11 @@ export class PostsController {
   ) { }
 
   @Get()
-  getAll(): Promise<Object> {
-    return this.postService.getNetworkPosts();
+  getAll(@Query() query: PostsQuery): Promise<Object> {
+    const categories = query?.categories;
+    const page = query?.page;
+    const perPage = query?.per_page;
+    return this.postService.getAll({ categories, pageNo, perPage });
   }
 
   @Get('syncCategories')
@@ -19,4 +22,15 @@ export class PostsController {
     return await this.postsLoaderService.syncAllCategories();
   }
 
+  @Get('loadCategoriesAndSyncPosts')
+  async loadCategoriesAndSyncPosts(): Promise<Object> {
+    return await this.postsLoaderService.loadCategoriesAndSyncPosts();
+  }
+
 }
+
+type PostsQuery = {
+  categories: number;
+  page: number;
+  per_page: number;
+};

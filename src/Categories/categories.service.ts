@@ -15,6 +15,16 @@ export class CategoriesService {
     return createdCat.save();
   }
 
+  async get({ id }): Promise<Category> {
+    const [category] = await this.categoryModel.find({ id }).exec();
+    return category;
+  }
+
+  async update({ id, count }: { id: number; count: number }): Promise<boolean> {
+    await this.categoryModel.updateOne({ id }, { count });
+    return true;
+  }
+
   async getAll(): Promise<Category[]> {
     return this.categoryModel.find().exec();
   }

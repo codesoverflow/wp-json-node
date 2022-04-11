@@ -31,8 +31,14 @@ export class PostsService {
     return post;
   }
 
-  async getAll(): Promise<Post[]> {
-    const posts = await this.postModel.find().exec();
+  async getAll({ categories, pageNo, perPage }): Promise<Post[]> {
+    const skippingRecords = pageNo - 1 * perPage;
+    const posts = await this.postModel
+      .find({ categoryId: categories })
+      .skip(skippingRecords)
+      .limit(perPage)
+      .sort({ _id: -1 })
+      .exec();
     return posts;
   }
 

@@ -15,16 +15,7 @@ export class PostsLoaderService {
 
   async syncAllCategories(): Promise<SyncType> {
     try {
-      const dbCategories = await this.categoryService.getAll();
-      const { categories: webCategories } =
-        await this.categoryService.getNetworkCategories();
-      const initialLoadingDone = !!dbCategories.length;
-      if (initialLoadingDone) {
-        await this.syncAllPosts({ dbCategories, webCategories });
-      } else {
-        await this.loadCategoriesAndPosts({ webCategories });
-
-      }
+      await this.syncAllPosts();
     } catch (error) {
       return {
         error: {
@@ -39,10 +30,32 @@ export class PostsLoaderService {
     };
   }
 
-  async syncAllPosts({ dbCategories, webCategories }): Promise<boolean> {
-    const updatedCategories = dbCategories.filter((cat, index) => {
-      const webCat = webCategories[index];
-      return webCat.count > cat.count;
+  async loadCategoriesAndSyncPosts(): Promise<SyncType> {
+    try {
+      await this.loadCategoriesAndPosts();
+    } catch (error) {
+      return {
+        error: {
+          name: error.name,
+          message: error.message,
+        },
+        isSucess: false,
+      };
+    }
+    return {
+      isSucess: true,
+    };
+  }
+
+
+  private async syncAllPosts(): Promise<boolean> {
+    const dbCategories = await this.categoryService.getAll();
+    const { categories: webCategories } =
+      await this.categoryService.getNetworkCategories();
+
+    const updatedCategories = webCategories.filter((webCat, index) => {
+      const dbCat = dbCategories[index];
+      return webCat.count > dbCat.count;
     });
 
     for (const updatedCategory of updatedCategories) {
@@ -59,23 +72,30 @@ export class PostsLoaderService {
 
       for (const webPost of webPosts) {
         const post = await this.postService.getPost({ id: webPost.id });
-        webPost?.id !== post?.id && (await this.postService.create(webPost));
+        webPost?.id !== post?.id && (await this.postService.create({ ...webPost, categoryId }));
       }
+
+      this.categoryService.update({
+        id: updatedCategory.id,
+        count: updatedCategory.count,
+      });
     }
 
     return true;
   }
 
-  async loadCategoriesAndPosts({ webCategories }): Promise<boolean> {
-
+  private async loadCategoriesAndPosts(): Promise<boolean> {
+    const { categories: webCategories } =
+      await this.categoryService.getNetworkCategories();
     const webCatChunks = chunk(webCategories, 3);
 
     for (const webCatChunk of webCatChunks) {
       for (const webCat of webCatChunk) {
-        const category = await this.categoryService.create(webCat);
-        if (category) {
-          const postCount = category.count;
-          const categoryId = category.id;
+        const dbCat = await this.categoryService.get({ id: webCat?.id });
+
+        if (webCat?.id) {
+          const postCount = webCat?.count;
+          const categoryId = webCat?.id;
           const pageList = getPages({ count: postCount, perPageItems });
 
           for (const pageNo of pageList) {
@@ -86,10 +106,14 @@ export class PostsLoaderService {
             });
 
             for (const webPost of webPosts) {
-              await this.postService.create(webPost);
+              await this.postService.create({ ...webPost, categoryId });
             }
           }
         }
+
+        dbCat?.id === webCat?.id
+          ? await this.categoryService.update(webCat)
+          : await this.categoryService.create(webCat);
       }
     }
 
