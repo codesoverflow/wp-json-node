@@ -14,8 +14,8 @@ export class PostsController {
     return this.postService.getNetworkPosts();
   }
 
-  @Get()
-  syncCategories(): Promise<Object> {
+  @Get('syncCategories')
+  async syncCategories(): Promise<Object> {
     return await this.postsLoaderService.syncAllCategories();
   }
 

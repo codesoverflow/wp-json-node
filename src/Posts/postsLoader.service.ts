@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import chunk from 'lodash/chunk';
+import { chunk } from 'lodash';
 
 import { CategoriesService } from '../Categories/categories.service';
 import { PostsService } from './posts.service';
@@ -13,51 +13,33 @@ export class PostsLoaderService {
   ) { }
 
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  async getNetworkPosts({
-    categoryId = 1,
-    pageNo = 1,
-    perPageItems = 100,
-  } = {}): Promise<Object> {
-    const postsPath = `${process.env.HOST}${process.env.JSON_PATH}${process.env.POST_PATH}`;
-    const postsQuery = `?categories=${categoryId}&page=${pageNo}&per_page=${perPageItems}`;
-    const postsFinalPath = `${postsPath}${postsQuery}`;
+  async syncAllCategories(): Promise<SyncType> {
     try {
-      const response = await fetch(postsFinalPath);
-      const { status } = response;
-      if (status === 200) {
-        const posts = await response.json();
-        return {
-          posts,
-        };
+      const dbCategories = await this.categoryService.getAll();
+      const { categories: webCategories } =
+        await this.categoryService.getNetworkCategories();
+      const initialLoadingDone = !!dbCategories.length;
+      if (initialLoadingDone) {
+        await this.syncAllPosts({ dbCategories, webCategories });
+      } else {
+        await this.loadCategoriesAndPosts({ webCategories });
+
       }
-
+    } catch (error) {
       return {
-        posts: [],
-      };
-    } catch (e) {
-      return {
-        postsFinalPath,
-        error: e,
-        posts: [],
+        error: {
+          name: error.name,
+          message: error.message,
+        },
+        isSucess: false,
       };
     }
+    return {
+      isSucess: true,
+    };
   }
 
-
-  async syncAllCategories(): Object {
-    const dbCategories = await this.categoryService.getAll();
-    const { categories: webCategories } = await this.categoryService.getNetworkCategories();
-    const initialLoadingDone = !!dbCategories.length;
-    if (initialLoadingDone) {
-      this.loadCategoriesAndPosts({ webCategories });
-    } else {
-
-    }
-    return {};
-  }
-
-  async syncAllPosts({ dbCategories, webCategories }): boolean {
+  async syncAllPosts({ dbCategories, webCategories }): Promise<boolean> {
     const updatedCategories = dbCategories.filter((cat, index) => {
       const webCat = webCategories[index];
       return webCat.count > cat.count;
@@ -74,16 +56,17 @@ export class PostsLoaderService {
         pageNo: lastPageNo,
         perPageItems,
       });
+
       for (const webPost of webPosts) {
-        const post = this.postService.getPost({ id: webPost.id });
-        webPost.id !== post.id && (await this.postService.create(webPost));
+        const post = await this.postService.getPost({ id: webPost.id });
+        webPost?.id !== post?.id && (await this.postService.create(webPost));
       }
     }
 
     return true;
   }
 
-  async loadCategoriesAndPosts({ webCategories }): boolean {
+  async loadCategoriesAndPosts({ webCategories }): Promise<boolean> {
 
     const webCatChunks = chunk(webCategories, 3);
 
@@ -119,3 +102,7 @@ function getPages({ count, perPageItems }) {
   return pageList.map((pageIndex) => pageIndex + 1);
 }
 const perPageItems = 100;
+type SyncType = {
+  error?: Object;
+  isSucess: boolean;
+};

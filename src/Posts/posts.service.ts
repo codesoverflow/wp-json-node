@@ -9,27 +9,45 @@ export class PostsService {
     @InjectModel(postsDocumentName) private postModel: Model<PostDocument>,
   ) { }
 
-  async create(postData: Post): Promise<Post> {
-    const post = new this.postModel(postData);
+  async create(postData: WebPostType): Promise<Post> {
+    const {
+      id,
+      date,
+      slug,
+      title: { rendered: title },
+      content: { rendered: content },
+      featured_image_url_td_100x70,
+    } = postData;
+    const finalPost = {
+      id,
+      date,
+      slug,
+      title,
+      content,
+      featured_image_url_td_100x70,
+    };
+    const post = new this.postModel(finalPost);
     await post.save();
     return post;
   }
 
   async getAll(): Promise<Post[]> {
-    const posts = await this.postModel.find({ id: 123 }).exec();
+    const posts = await this.postModel.find().exec();
     return posts;
   }
 
-  async getPost({ id }) {
-    return await this.postModel.find({ id }).exec();
+  async getPost({ id }): Promise<Post> {
+    const [post] = await this.postModel.find({ id }).exec();
+    return post;
   }
+
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   async getNetworkPosts({
     categoryId = 1,
     pageNo = 1,
     perPageItems = 100,
-  } = {}): Promise<Object> {
+  } = {}): Promise<{ posts: WebPostType[]; error?: Error }> {
     const postsPath = `${process.env.HOST}${process.env.JSON_PATH}${process.env.POST_PATH}`;
     const postsQuery = `?categories=${categoryId}&page=${pageNo}&per_page=${perPageItems}`;
     const postsFinalPath = `${postsPath}${postsQuery}`;
@@ -48,11 +66,19 @@ export class PostsService {
       };
     } catch (e) {
       return {
-        postsFinalPath,
         error: e,
         posts: [],
       };
     }
   }
-
 }
+
+type PostsType = {
+  error?: Error;
+  posts: Post[];
+};
+
+export interface WebPostType extends Omit<Post, 'title' | 'content'> {
+  title: { rendered: string };
+  content: { rendered: string };
+};

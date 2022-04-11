@@ -20,7 +20,7 @@ export class CategoriesService {
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
-  async getNetworkCategories(): Promise<Object> {
+  async getNetworkCategories(): Promise<CategoriesType> {
     const categoriesPath = `${process.env.HOST}${process.env.JSON_PATH}${process.env.CATEGORY_PATH}`
     try {
 
@@ -38,7 +38,6 @@ export class CategoriesService {
       };
     } catch (e) {
       return {
-        categoriesPath,
         error: e,
         categories: [],
       };
@@ -46,3 +45,9 @@ export class CategoriesService {
   }
 
 }
+
+type CategoriesType = {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  error?: Object;
+  categories: Category[];
+};
