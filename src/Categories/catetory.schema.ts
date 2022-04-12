@@ -22,6 +22,9 @@ export class Category {
 
   @Prop()
   orderNo: number;
+
+  @Prop()
+  showCategory: number;
 }
 
 export const documentName = 'categories';

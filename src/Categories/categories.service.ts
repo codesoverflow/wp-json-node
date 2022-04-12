@@ -25,8 +25,18 @@ export class CategoriesService {
     return true;
   }
 
-  async getAll(): Promise<Category[]> {
-    return this.categoryModel.find().exec();
+  async getAll(): Promise<CategoriesType> {
+    try {
+      const categories = await this.categoryModel.find().exec();
+      return {
+        categories,
+      };
+    } catch (error) {
+      return {
+        error,
+        categories: [],
+      };
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -56,7 +66,7 @@ export class CategoriesService {
 
 }
 
-type CategoriesType = {
+export type CategoriesType = {
   // eslint-disable-next-line @typescript-eslint/ban-types
   error?: Object;
   categories: Category[];

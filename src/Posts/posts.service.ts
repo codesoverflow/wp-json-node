@@ -11,35 +11,48 @@ export class PostsService {
 
   async create(postData: WebPostType): Promise<Post> {
     const {
-      id,
-      date,
-      slug,
+      // id,
+      // date,
+      // slug,
       title: { rendered: title },
       content: { rendered: content },
-      featured_image_url_td_100x70,
+      // featured_image_url_td_100x70,
+      // categoryId,
+      ...rest
     } = postData;
     const finalPost = {
-      id,
-      date,
-      slug,
+      ...rest,
+      // id,
+      // date,
+      // slug,
       title,
       content,
-      featured_image_url_td_100x70,
+      // featured_image_url_td_100x70,
+      // categoryId,
     };
     const post = new this.postModel(finalPost);
     await post.save();
     return post;
   }
 
-  async getAll({ categories, pageNo, perPage }): Promise<Post[]> {
-    const skippingRecords = pageNo - 1 * perPage;
-    const posts = await this.postModel
-      .find({ categoryId: categories })
-      .skip(skippingRecords)
-      .limit(perPage)
-      .sort({ _id: -1 })
-      .exec();
-    return posts;
+  async getAll({
+    categories = 1,
+    pageNo = 1,
+    perPage = 100,
+  }): Promise<PostsType> {
+    try {
+      const skippingRecords = (pageNo - 1) * perPage;
+      //console.log({ skippingRecords })
+      const posts = await this.postModel
+        .find({ categoryId: categories })
+        .skip(skippingRecords)
+        .limit(perPage)
+        .sort({ _id: -1 })
+        .exec();
+      return { posts };
+    } catch (error) {
+      return { error, posts: [] };
+    }
   }
 
   async getPost({ id }): Promise<Post> {

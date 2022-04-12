@@ -108,6 +108,13 @@ export class PostsLoaderService {
             for (const webPost of webPosts) {
               await this.postService.create({ ...webPost, categoryId });
             }
+
+            console.log({
+              categoryId,
+              pageNo,
+              perPageItems,
+              totalWebPosts: webPosts.length,
+            })
           }
         }
 

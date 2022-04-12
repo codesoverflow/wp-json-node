@@ -6,7 +6,11 @@ export class CategoriesController {
   constructor(private readonly categoryService: CategoriesService) { }
 
   @Get()
-  getCategories(): Object {
-    return this.categoryService.getNetworkCategories();
+  async getCategories(): Promise<Object> {
+    const { categories, error } = await this.categoryService.getAll();
+    if (error) {
+      error;
+    }
+    return categories;
   }
 }

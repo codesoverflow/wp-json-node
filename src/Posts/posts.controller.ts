@@ -10,11 +10,21 @@ export class PostsController {
   ) { }
 
   @Get()
-  getAll(@Query() query: PostsQuery): Promise<Object> {
+  async getAll(@Query() query: PostsQuery): Promise<Object> {
     const categories = query?.categories;
     const page = query?.page;
     const perPage = query?.per_page;
-    return this.postService.getAll({ categories, pageNo, perPage });
+    const { posts, error } = await this.postService.getAll({
+      categories,
+      pageNo: page,
+      perPage,
+    });
+
+    if (error) {
+      return error;
+    }
+
+    return posts;
   }
 
   @Get('syncCategories')
