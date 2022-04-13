@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostsLoaderService } from './postsLoader.service';
 
-@Controller('posts')
+@Controller('wp-json/wp/v2/posts')
 export class PostsController {
   constructor(
     private readonly postService: PostsService,
