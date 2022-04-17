@@ -25,6 +25,9 @@ export class Category {
 
   @Prop()
   showCategory: number;
+
+  @Prop()
+  description: string;
 }
 
 export const documentName = 'categories';

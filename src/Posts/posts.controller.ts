@@ -14,7 +14,7 @@ export class PostsController {
     const categories = query?.categories;
     const page = query?.page;
     const perPage = query?.per_page;
-    const { posts, error } = await this.postService.getAll({
+    const { posts, error } = await this.postService.getDbPostsAsWebPosts({
       categories,
       pageNo: page,
       perPage,

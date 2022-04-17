@@ -42,12 +42,11 @@ export class PostsService {
   }): Promise<PostsType> {
     try {
       const skippingRecords = (pageNo - 1) * perPage;
-      //console.log({ skippingRecords })
       const posts = await this.postModel
         .find({ categoryId: categories })
         .skip(skippingRecords)
         .limit(perPage)
-        .sort({ _id: -1 })
+        .sort({ id: -1 })
         .exec();
       return { posts };
     } catch (error) {
@@ -60,6 +59,34 @@ export class PostsService {
     return post;
   }
 
+  async getDbPostsAsWebPosts(queries): Promise<WebPostsType> {
+    const { error, posts } = await this.getAll(queries);
+    //console.log({ posts })
+    const webPosts = posts.map((post) => {
+      const {
+        id,
+        date,
+        slug,
+        link,
+        featured_image_url_td_100x70,
+        title,
+        content,
+        categoryId,
+      } = post;
+      return {
+        id,
+        date,
+        slug,
+        link,
+        featured_image_url_td_100x70,
+        categoryId,
+        title: { rendered: title },
+        content: { rendered: content },
+      };
+    });
+
+    return { posts: webPosts, ...(error && { error }) };
+  }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   async getNetworkPosts({
@@ -100,4 +127,9 @@ type PostsType = {
 export interface WebPostType extends Omit<Post, 'title' | 'content'> {
   title: { rendered: string };
   content: { rendered: string };
+};
+
+type WebPostsType = {
+  error?: Error;
+  posts: WebPostType[];
 };

@@ -25,6 +25,9 @@ export class Post {
 
   @Prop()
   featured_image_url_td_100x70: string;
+
+  @Prop()
+  link: string;
 }
 
 export const postsDocumentName = 'posts';
