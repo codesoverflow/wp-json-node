@@ -94,7 +94,7 @@ export class PostsService {
     pageNo = 1,
     perPageItems = 100,
   } = {}): Promise<{ posts: WebPostType[]; error?: Error }> {
-    const postsPath = `${process.env.HOST}${process.env.JSON_PATH}${process.env.POST_PATH}`;
+    const postsPath = `${process.env.HOST}${process.env.JSON_SYNC_PATH}${process.env.POST_PATH}`;
     const postsQuery = `?categories=${categoryId}&page=${pageNo}&per_page=${perPageItems}`;
     const postsFinalPath = `${postsPath}${postsQuery}`;
     try {

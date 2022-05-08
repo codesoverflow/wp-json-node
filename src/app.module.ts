@@ -15,7 +15,7 @@ require('isomorphic-fetch');
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot('mongodb://localhost:27017/test'),
+    MongooseModule.forRoot('mongodb://localhost:27017/bhajandiary'),
     MongooseModule.forFeature([{ name: documentName, schema: CategorySchema }]),
     MongooseModule.forFeature([
       { name: postsDocumentName, schema: PostSchema },
