@@ -41,9 +41,11 @@ export class CategoriesService {
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   async getNetworkCategories(): Promise<CategoriesType> {
-    const categoriesPath = `${process.env.HOST}${process.env.JSON_SYNC_PATH}${process.env.CATEGORY_PATH}`
+    const categoriesPath = `${process.env.HOST}${process.env.JSON_PATH}${process.env.CATEGORY_PATH}`
     try {
-
+      console.log({
+        categoriesPath,
+      })
       const response = await fetch(categoriesPath);
       const { status } = response;
       if (status === 200) {
