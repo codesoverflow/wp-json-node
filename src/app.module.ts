@@ -11,6 +11,8 @@ import { PostsService } from './Posts/posts.service';
 import { postsDocumentName, PostSchema } from './Posts/posts.schema';
 import { PostsLoaderService } from './Posts/postsLoader.service';
 
+import { BdTestController } from './bdTest/bdTest.controller';
+
 require('isomorphic-fetch');
 @Module({
   imports: [
@@ -21,7 +23,7 @@ require('isomorphic-fetch');
       { name: postsDocumentName, schema: PostSchema },
     ]),
   ],
-  controllers: [CategoriesController, PostsController],
+  controllers: [CategoriesController, PostsController, BdTestController],
   providers: [CategoriesService, PostsService, PostsLoaderService],
 })
 export class AppModule { }
