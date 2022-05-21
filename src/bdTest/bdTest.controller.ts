@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { PostsService } from 'src/Posts/posts.service';
 import { CategoriesService } from '../Categories/categories.service';
 
-@Controller('bdTest')
+@Controller('some/path/bdTest')
 export class BdTestController {
   constructor(
     private readonly categoryService: CategoriesService,
